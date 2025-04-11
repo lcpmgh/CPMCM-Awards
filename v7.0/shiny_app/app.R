@@ -596,7 +596,7 @@ server <- function(input, output, session){
         axisPointer = list(type = 'shadow'),
         formatter = JS("
           function(params) {
-            let result = params[0].name + '年<br>';
+            let result = params[0].name + '<br>';
             params.forEach(function(item) {
               if (item.value !== null && item.value !== undefined && item.value !== '-') {
                 result += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br>';
@@ -789,7 +789,7 @@ server <- function(input, output, session){
           axisPointer = list(type = 'shadow'),
           formatter = JS("
           function(params) {
-            let result = params[0].name + '年<br>';
+            let result = params[0].name + '<br>';
             params.forEach(function(item) {
               if (item.value !== null && item.value !== undefined && item.value !== '-') {
                 result += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br>';
