@@ -94,7 +94,7 @@ server <- function(input, output, session){
     return(data_list)
   }
   # data
-  sustom_color <- c("#5470C6", "#91CC75", "#FAC858", "#EE6666", "#73C0DE", "#FC8452")
+  sustom_color <- c("#5470C6", "#91CC75", "#FAC858", "#EE6666", "#73C0DE", "#3BA272","#FC8452", "#9A60B4")
   data_team   <- my_read_csv("2-data_total.csv") %>% .[, A_type:=factor(A_type, levels = c('一等奖','二等奖','三等奖','成功参与奖'), order = T)]
   data_member <- my_read_csv("5-data_member.csv") %>% .[, A_type:=factor(A_type, levels = c('一等奖','二等奖','三等奖'), order = T)]
   unit_unique <- data_member$Unit %>% unique() %>% stringi::stri_sort(locale = "zh", numeric = TRUE) 
