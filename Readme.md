@@ -23,19 +23,19 @@
 
 ## 可视化内容展示（应用已部署至阿里云：<a href="http://lcpmgh.com/npmcm" target="_blank">npmcm</a>）
 
-1. 数据库查询
+1. 队伍获奖统计
 
 ![shiny_app_page_1](https://raw.githubusercontent.com/lcpmgh/NPMCM/master/v7.0/shiny_preview/shiny_app_page_1.png)
 
-2. 队伍获奖统计
+2. 个人获奖统计
 
 ![shiny_app_page_2](https://raw.githubusercontent.com/lcpmgh/NPMCM/master/v7.0/shiny_preview/shiny_app_page_2.png)
 
-3. 个人获奖统计
+3. 个人连续获奖统计
 
 ![shiny_app_page_3](https://raw.githubusercontent.com/lcpmgh/NPMCM/master/v7.0/shiny_preview/shiny_app_page_3.png)
 
-4. 个人连续获奖统计
+4. 数据库查询
 
 ![shiny_app_page_4](https://raw.githubusercontent.com/lcpmgh/NPMCM/master/v7.0/shiny_preview/shiny_app_page_4.png)
 

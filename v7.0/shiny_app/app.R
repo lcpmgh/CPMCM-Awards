@@ -4,7 +4,7 @@
 #          v3: 2022.01.29   Switch to REmap package (from rgdal package)
 #          v4：2025.02.06   大改，简化包、更改布局、添加单位历年数据等
 
-##### packages #####
+##### packages ##########################################################################
 library(shiny)
 library(echarty)
 library(data.table)
@@ -15,7 +15,7 @@ library(shinyWidgets)
 library(DT)
 library(jsonlite)
 
-##### ui #####
+##### ui ################################################################################
 ui <- fluidPage(
   # Header
   tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "style.css")),
@@ -64,9 +64,9 @@ ui <- fluidPage(
 )
 
 
-##### server ##### 
+##### server ############################################################################
 server <- function(input, output, session){
-  ##### 准备部分 #####
+  ##### +++ 准备部分 #####################################################################
   # font
   font_add("myFont", './data/0-typeface.ttc')    
   showtext_auto()
@@ -94,6 +94,7 @@ server <- function(input, output, session){
     return(data_list)
   }
   # data
+  sustom_color <- c("#5470C6", "#91CC75", "#FAC858", "#EE6666", "#73C0DE", "#FC8452")
   data_team   <- my_read_csv("2-data_total.csv") %>% .[, A_type:=factor(A_type, levels = c('一等奖','二等奖','三等奖','成功参与奖'), order = T)]
   data_member <- my_read_csv("5-data_member.csv") %>% .[, A_type:=factor(A_type, levels = c('一等奖','二等奖','三等奖'), order = T)]
   unit_unique <- data_member$Unit %>% unique() %>% stringi::stri_sort(locale = "zh", numeric = TRUE) 
@@ -104,8 +105,8 @@ server <- function(input, output, session){
                                         '云南', '浙江', '重庆'))
   
   
-  ##### p1 按队伍 #####
-  # p1，UI
+  ##### +++ p1 按队伍 #####################################################################
+  # p1, UI ================================================================ 
   output$ui_p1_main <- renderUI({
     tagList(
       h3("参赛队伍数量"),
@@ -123,7 +124,7 @@ server <- function(input, output, session){
     )
   })
   
-  # p1图1，参赛数量
+  # p1图1，参赛队伍数量 ================================================================ 
   p1_data1 <- data_team %>%
     dcast(Year~A_type, value.var = 'Year', fun = length) %>%
     .[, count:=apply(.SD, 1, sum), .SDcols=2:5] %>% 
@@ -131,6 +132,7 @@ server <- function(input, output, session){
     .[award4==0, count:=NA_integer_]
   output$p1_plot_count <- ecs.render({
     ec.init(
+      color = sustom_color,
       series = list(
         list(type = "line", name = "参赛队伍量", data = p1_data1$count, 
              label = list(normal = list(show=TRUE, position="top")))
@@ -138,10 +140,11 @@ server <- function(input, output, session){
       xAxis = list(type = "category", 
                    data = p1_data1$Year,
                    name="年份",
-                   boundaryGap = FALSE,   #横坐标点对应，而非中心对应
+                   boundaryGap = TRUE,          #离散x轴，两端是否gap
                    nameLocation = "middle",
                    nameTextStyle = list(fontSize = 14, padding = c(15, 0, 0, 0)), 
-                   axisLine = list(show = TRUE, lineStyle = list(color = "black"))   
+                   axisLine = list(show = TRUE, lineStyle = list(color = "black")),
+                   axisTick = list(show = T, alignWithLabel =T)   
       ),
       yAxis = list(type = "value", 
                    name="参赛队伍量",
@@ -167,7 +170,7 @@ server <- function(input, output, session){
     )
   })
   
-  # p1图2，获奖概率
+  # p1图2，获奖概率 ================================================================ 
   p1_data2 <- copy(p1_data1) %>% 
     .[, c("award1r", "award2r", "award3r", "awardr"):=
         list(round(award1/count*100, 2), 
@@ -177,6 +180,7 @@ server <- function(input, output, session){
         )]
   output$p1_plot_rate <- ecs.render({
     ec.init(
+      color = sustom_color,
       series = list(
         list(type = "line", stack = 'total', areaStyle = "", name = "一等奖", data = p1_data2$award1r),
         list(type = "line", stack = 'total', areaStyle = "", name = "二等奖", data = p1_data2$award2r),
@@ -201,10 +205,11 @@ server <- function(input, output, session){
       xAxis = list(type = "category", 
                    data = p1_data2$Year,
                    name="年份",
-                   boundaryGap = FALSE,
+                   boundaryGap = TRUE,
                    nameLocation = "middle",
                    nameTextStyle = list(fontSize = 14, padding = c(15, 0, 0, 0)), 
-                   axisLine = list(show = TRUE, lineStyle = list(color = "black"))   
+                   axisLine = list(show = TRUE, lineStyle = list(color = "black")),
+                   axisTick = list(show = T, alignWithLabel =T)   
       ),
       yAxis = list(type = "value", 
                    name = "获奖概率",
@@ -230,15 +235,16 @@ server <- function(input, output, session){
           }
        ")
       ),
-      legend = list(show = T)   
+      legend = list(show = T, top = "5%")  
     )
   })
   
-  # p1图3，获奖数量（按奖项）
+  # p1图3，获奖数量（按奖项） ================================================================ 
   p1_data3 <- copy(p1_data1) %>% 
     .[, count123:=award1+award2+award3]
   output$p1_plot_count_atype <- ecs.render({
     ec.init(
+      color = sustom_color,
       series = list(
         list(type = "line", stack = 'total', areaStyle = "", name = "一等奖", data = p1_data3$award1),
         list(type = "line", stack = 'total', areaStyle = "", name = "二等奖", data = p1_data3$award2),
@@ -263,10 +269,11 @@ server <- function(input, output, session){
       xAxis = list(type = "category", 
                    data = p1_data3$Year,
                    name="年份",
-                   boundaryGap = FALSE,
+                   boundaryGap = TRUE,
                    nameLocation = "middle",
                    nameTextStyle = list(fontSize = 14, padding = c(15, 0, 0, 0)), 
-                   axisLine = list(show = TRUE, lineStyle = list(color = "black"))   
+                   axisLine = list(show = TRUE, lineStyle = list(color = "black")),
+                   axisTick = list(show = T, alignWithLabel =T)   
       ),
       yAxis = list(type = "value", 
                    name = "获奖数量",
@@ -288,16 +295,17 @@ server <- function(input, output, session){
           }
         ")
       ),
-      legend = list(show = T)   
+      legend = list(show = T, top = "5%")      
     )
   })
   
-  # p1图4，获奖数量（按题型）
+  # p1图4，获奖数量（按题型） ================================================================ 
   p1_data4 <- data_team[A_type != "成功参与奖",] %>%
     dcast(Year~Q_type, value.var = 'Year', fun = length) %>% 
     .[, countall:=apply(.SD, 1, sum), .SDcols=2:8]
   output$p1_plot_count_qtype <- ecs.render({
     ec.init(
+      color = sustom_color,
       series = list(
         list(type = "line", stack = 'total', areaStyle = "", name = "A", data = p1_data4$A),
         list(type = "line", stack = 'total', areaStyle = "", name = "B", data = p1_data4$B),
@@ -326,10 +334,11 @@ server <- function(input, output, session){
       xAxis = list(type = "category", 
                    data = p1_data3$Year,
                    name="年份",
-                   boundaryGap = FALSE,
+                   boundaryGap = TRUE,
                    nameLocation = "middle",
                    nameTextStyle = list(fontSize = 14, padding = c(15, 0, 0, 0)), 
-                   axisLine = list(show = TRUE, lineStyle = list(color = "black"))   
+                   axisLine = list(show = TRUE, lineStyle = list(color = "black")),
+                   axisTick = list(show = T, alignWithLabel =T)   
       ),
       yAxis = list(type = "value", 
                    name = "获奖数量",
@@ -351,11 +360,11 @@ server <- function(input, output, session){
           }
   ")
       ),
-      legend = list(show = T)   
+      legend = list(show = T, top = "5%")  
     )
   })
   
-  # p1图5，获奖构成（奖项占比）
+  # p1图5，获奖构成（奖项占比） ================================================================ 
   p1_data5 <- copy(p1_data3) %>% 
     .[, c("award1p", "award2p", "award3p"):=
         list(round(award1/count123*100,2),
@@ -363,6 +372,7 @@ server <- function(input, output, session){
              round(award3/count123*100,2))]
   output$p1_plot_rate_atype <- ecs.render({
     ec.init(
+      color = sustom_color,
       series = list(
         list(type = "bar", stack = 'total', areaStyle = "", name = "一等奖", data = p1_data5$award1p),
         list(type = "bar", stack = 'total', areaStyle = "", name = "二等奖", data = p1_data5$award2p),
@@ -375,7 +385,7 @@ server <- function(input, output, session){
                    nameLocation = "middle",
                    nameTextStyle = list(fontSize = 14, padding = c(15, 0, 0, 0)), 
                    axisLine = list(show = TRUE, lineStyle = list(color = "black")),
-                   axisTick = list(alignWithLabel = TRUE)
+                   axisTick = list(alignWithLabel = TRUE, show = TRUE)   #alignWithLabel是对齐tick和label，只在boundaryGap=T的离散轴中生效                    
       ),
       yAxis = list(type = "value", 
                    name = "获奖构成",
@@ -401,11 +411,11 @@ server <- function(input, output, session){
           }
         ")
       ),
-      legend = list(show = T)   
+      legend = list(show = T, top = "5%")  
     )
   })
   
-  # p1图6，获奖构成（题型占比）
+  # p1图6，获奖构成（题型占比） ================================================================ 
   p1_data6 <- copy(p1_data4) %>% 
     .[, c("Ap", "Bp", "Cp", "Dp", "Ep", "Fp", "Np"):=
         list(round(A/countall*100, 2), 
@@ -417,6 +427,7 @@ server <- function(input, output, session){
              round(N/countall*100, 2))]
   output$p1_plot_rate_qtype <- ecs.render({
     ec.init(
+      color = sustom_color,
       series = list(
         list(type = "bar", stack = 'total', areaStyle = "", name = "A", data = p1_data6$Ap),
         list(type = "bar", stack = 'total', areaStyle = "", name = "B", data = p1_data6$Bp),
@@ -433,7 +444,7 @@ server <- function(input, output, session){
                    nameLocation = "middle",
                    nameTextStyle = list(fontSize = 14, padding = c(15, 0, 0, 0)),
                    axisLine = list(show = TRUE, lineStyle = list(color = "black")),
-                   axisTick = list(alignWithLabel = TRUE)
+                   axisTick = list(alignWithLabel = TRUE, show = TRUE)
       ),
       yAxis = list(type = "value",
                    name = "获奖构成",
@@ -459,12 +470,12 @@ server <- function(input, output, session){
           }
         ")
       ),
-      legend = list(show = T)
+      legend = list(show = T, top = "5%")
     )
   })
   
-  ##### p2 按培养单位 #####
-  # p2，UI
+  ##### +++ p2 按培养单位 #################################################################
+  # p2, UI ================================================================ 
   output$ui_p2_sidebar <- renderUI({
     tagList(
       h4("数据筛选"),
@@ -505,7 +516,7 @@ server <- function(input, output, session){
     )
   })
   
-  # p2图1，选定单位历年获奖人次
+  # p2图1，选定单位历年获奖人次 ================================================================ 
   output$p2_plot_Aunitaward <- ecs.render({
     if (length(input$p2_input_Atype) == 0) {
       sAtype <- c("一等奖", "二等奖", "三等奖")
@@ -526,10 +537,11 @@ server <- function(input, output, session){
       xAxis = list(type = "category", 
                    data = p2_data1$Year,
                    name="年份",
-                   boundaryGap = FALSE,   #横坐标点对应，而非中心对应
+                   boundaryGap = TRUE,
                    nameLocation = "middle",
                    nameTextStyle = list(fontSize = 14, padding = c(15, 0, 0, 0)), 
-                   axisLine = list(show = TRUE, lineStyle = list(color = "black"))   
+                   axisLine = list(show = TRUE, lineStyle = list(color = "black")),
+                   axisTick = list(show = T, alignWithLabel =T)   
       ),
       yAxis = list(type = "value", 
                    name="获奖人次",
@@ -555,7 +567,7 @@ server <- function(input, output, session){
     )
   })
   
-  # p2图2，获奖人次
+  # p2图2，获奖人次 ================================================================ 
   output$p2_plot_Atimes <- ecs.render({
     if (length(input$p2_input_Atype) == 0) {
       sAtype <- c("一等奖", "二等奖", "三等奖")
@@ -589,7 +601,7 @@ server <- function(input, output, session){
                    # nameLocation = "middle",
                    nameTextStyle = list(fontSize = 14, padding = c(0, 50, 0, 0)),
                    axisLine = list(show = TRUE, lineStyle = list(color = "black")),
-                   axisTick = list(alignWithLabel = TRUE)
+                   axisTick = list(alignWithLabel = TRUE, show = TRUE)
       ),
       tooltip = list(
         trigger = "axis",
@@ -610,7 +622,7 @@ server <- function(input, output, session){
     )
   })
   
-  # p2图3，各省获奖人次
+  # p2图3，各省获奖人次 ================================================================ 
   output$p2_plot_Pmember <- ecs.render({
     if (length(input$p2_input_Atype) == 0) {
       sAtype <- c("一等奖", "二等奖", "三等奖")
@@ -669,13 +681,18 @@ server <- function(input, output, session){
           label = list(
             show = TRUE,
             formatter = htmlwidgets::JS("
-          function(params) {
-            if (params.name == '南海诸岛' || params.name == '十段线') {
-              return '';  // 返回空字符串，隐藏这些标签
-            }
-            return params.name;
-          }
-        ")
+              function(params) {
+                if (params.name == '南海诸岛' || params.name == '十段线') {
+                  return '';  // 返回空字符串，隐藏这些标签
+                }
+                return params.name;
+              }
+            ")
+          ),
+          itemStyle = list(
+            borderColor = "gray20",      #边界线颜色（黑色）
+            borderWidth = 0.3,           #边界线宽度
+            areaColor = "white"          #默认区域填充颜色
           ),
           data = to_list_data(df_plot)
         )
@@ -685,8 +702,8 @@ server <- function(input, output, session){
     ecplot
   })
   
-  ##### p3 成员连续获奖 #####
-  # p3，UI
+  ##### +++ p3 成员连续获奖 ###############################################################
+  # p3, UI ================================================================ 
   output$ui_p3_sidebar <- renderUI({
     tagList(
       h4("数据筛选"),
@@ -724,7 +741,7 @@ server <- function(input, output, session){
     )
   })
   
-  # p3图1，个人连续获奖
+  # p3图1，个人连续获奖 ================================================================ 
   output$p3_plot_Stime <- ecs.render({
     if (length(input$p3_input_Atype) == 0) {
       sAtype <- c("一等奖", "二等奖", "三等奖")
@@ -782,7 +799,7 @@ server <- function(input, output, session){
                      # nameLocation = "middle",
                      nameTextStyle = list(fontSize = 14, padding = c(0, 50, 0, 0)),
                      axisLine = list(show = TRUE, lineStyle = list(color = "black")),
-                     axisTick = list(alignWithLabel = TRUE)
+                     axisTick = list(alignWithLabel = TRUE, show = TRUE)
         ),
         tooltip = list(
           trigger = "axis",
@@ -804,7 +821,7 @@ server <- function(input, output, session){
     }
   })
   
-  # p3图2，各省连续获奖人数
+  # p3图2，各省连续获奖人数 ================================================================ 
   output$p3_plot_Pseries <- ecs.render({
     if (length(input$p3_input_Atype) == 0) {
       sAtype <- c("一等奖", "二等奖", "三等奖")
@@ -863,13 +880,18 @@ server <- function(input, output, session){
           label = list(
             show = TRUE,
             formatter = htmlwidgets::JS("
-          function(params) {
-            if (params.name == '南海诸岛' || params.name == '十段线') {
-              return '';  // 返回空字符串，隐藏这些标签
-            }
-            return params.name;
-          }
-        ")
+              function(params) {
+                if (params.name == '南海诸岛' || params.name == '十段线') {
+                  return '';  // 返回空字符串，隐藏这些标签
+                }
+                return params.name;
+              }
+            ")
+          ),
+          itemStyle = list(
+            borderColor = "gray20",      #边界线颜色（黑色）
+            borderWidth = 0.3,           #边界线宽度
+            areaColor = "white"          #默认区域填充颜色
           ),
           data = to_list_data(df_plot)
         )
@@ -879,8 +901,8 @@ server <- function(input, output, session){
     ecplot
   })
   
-  ##### p4 获奖名单 #####
-  # p4，UI
+  ##### +++ p4 获奖名单 ###################################################################
+  # p4，UI ================================================================ 
   output$ui_p4_sidebar <- renderUI({
     tagList(
       h4("数据筛选"),
@@ -910,7 +932,7 @@ server <- function(input, output, session){
     )
   })
   
-  # p4表1，获奖名单
+  # p4表1，获奖名单 ================================================================ 
   output$p4_atable <- renderDT({
     if(length(input$p4_input_Syear) == 0) sYear <- unique(data_team$Year) else sYear <- input$p4_input_Syear
     if(length(input$p4_input_Satype) == 0) sA_type <- unique(data_team$A_type) else sA_type <- input$p4_input_Satype
@@ -925,5 +947,5 @@ server <- function(input, output, session){
   })
 }
 
-##### app ######
+##### app #################################################################################
 shinyApp(ui, server)
