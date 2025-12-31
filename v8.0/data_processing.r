@@ -27,7 +27,7 @@ library(stringr)
 # 1.3 环境设置
 options(stringsAsFactors = F)   #指定字符读取方式和默认编码
 ver <- "8.0"                    #定义正在修改数据的版本，用于存储、读取数据时，定位文件夹
-setwd("D:/#R/@github/npmcm")
+setwd("D:/#R/@github/CPMCM-Awards")
 
 
 ##### 2. 创建函数 ##############################################################
