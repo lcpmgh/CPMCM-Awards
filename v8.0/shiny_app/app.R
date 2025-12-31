@@ -991,20 +991,16 @@ server <- function(input, output, session){
       options = list(
         pageLength = 25, 
         scrollX = TRUE,
-        autoWidth = FALSE,   # 关键！否则你设的宽度会被覆盖
+        autoWidth = FALSE,    
         columnDefs = list(
-          list(targets = 0, width = "10px", className = "dt-center"),  # 行号
-          list(targets = 1, width = "30px", className = "dt-center"),  # Year
-          list(targets = 2, width = "80px", className = "dt-center"),  # Session
-          list(targets = 3, width = "30px", className = "dt-center"),  # Q_type
+          list(targets = 0, width = "10px"),
+          list(targets = 1, width = "30px"),
+          list(targets = 2, width = "80px"),
+          list(targets = 3, width = "30px"),
           list(targets = 4, width = "auto") 
         )
       )
     )
-    
-    
-    
-    
   })
   
 }
