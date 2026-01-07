@@ -3,7 +3,7 @@
 #          v2: 2021.05.01
 #          v3: 2022.01.29   Switch to REmap package (from rgdal package)
 #          v4：2025.02.06   大修，简化包、更改布局、添加单位历年数据等
-#          v5: 2025.12.30   小修，添加了历年赛题页面
+#          v5: 2025.12.30   小修，添加了历年赛题页面，优化了一些细节
 
 ##### packages ##########################################################################
 library(shiny)
@@ -52,7 +52,7 @@ ui <- fluidPage(
   ),
   tags$hr(),
   tags$div(align = "center", style = "margin-bottom: 10px;",
-           tags$p("\ua9 2021-2025, Lcpmgh, All rights reserved.", style="height:8px"),
+           tags$p("\ua9 2021-2026, Lcpmgh, All rights reserved.", style="height:8px"),
            tags$div(align = "center",
                     actionLink(inputId = "", label = "lcpmgh ", icon = icon("github"), onclick ="window.open('https://github.com/lcpmgh')"),
                     tags$p("  ", style = "display:inline;white-space:pre"),
@@ -912,18 +912,18 @@ server <- function(input, output, session){
     tagList(
       h4("数据筛选"),
       pickerInput(inputId = "p4_input_Syear",
-                  label = "选择年份",
-                  choices = unique(data_team$Year),
+                  label = "年份(届次)",
+                  choices = unique(questions[,paste0(Year,"(", Session, ")")]),         #这里用题目名单体现届次信息
                   options = list(`selected-text-format` = "count > 3", `actions-box` = TRUE),
                   multiple = TRUE),
       checkboxGroupButtons(inputId = "p4_input_Satype",
-                           label = "选择奖项",
+                           label = "奖项",
                            choices = c("一等奖", "二等奖", "三等奖", "成功参与奖"),
                            status = "primary",
                            size = "lg"
       ),
       checkboxGroupButtons(inputId = "p4_input_Sqtype",
-                           label = "选择题型",
+                           label = "题型",
                            choices = c("A", "B", "C", "D", "E", "F", "N"),
                            status = "primary",
                            width = "300px", 
@@ -939,7 +939,7 @@ server <- function(input, output, session){
   
   # p4表，获奖名单 ================================================================ 
   output$p4_atable <- renderDT({
-    if(length(input$p4_input_Syear) == 0) sYear <- unique(data_team$Year) else sYear <- input$p4_input_Syear
+    if(length(input$p4_input_Syear) == 0) sYear <- unique(data_team$Year) else sYear <- input$p4_input_Syear %>% regmatches(., regexpr("\\d{4,4}", .))
     if(length(input$p4_input_Satype) == 0) sA_type <- unique(data_team$A_type) else sA_type <- input$p4_input_Satype
     if(length(input$p4_input_Sqtype) == 0) sQ_type <- unique(data_team$Q_type) else sQ_type <- input$p4_input_Sqtype
     Scol <- c("Year", "Q_type", "A_type", "T_numb", "C_name", "C_unit", "F_name", "F_unit", "S_name", "S_unit")
@@ -948,7 +948,7 @@ server <- function(input, output, session){
     p4_data <- data_team[Year %in% sYear & A_type %in% sA_type & Q_type %in% sQ_type, Scol, with=F] %>% 
       set_colnames(Scol_name)
     # DT::datatable(p4_data, options = list(pageLength = 25, scrollX = TRUE))
-    DT::datatable(p4_data, options = list(pageLength = 25, scrollX = TRUE))
+    DT::datatable(p4_data, options = list(pageLength = 25, scrollX = TRUE),class = "display stripe hover order-column compact dt-left")
   })
   
   ##### +++ p5 历年赛题 ###################################################################
@@ -957,12 +957,12 @@ server <- function(input, output, session){
     tagList(
       h4("数据筛选"),
       pickerInput(inputId = "p5_input_Syearsession",
-                  label = "选择年份(届次)",
+                  label = "年份(届次)",
                   choices = unique(questions[,paste0(Year,"(", Session, ")")]),
                   options = list(`selected-text-format` = "count > 3", `actions-box` = TRUE),
                   multiple = TRUE),
       checkboxGroupButtons(inputId = "p5_input_Sqtype",
-                           label = "选择题型",
+                           label = "题型",
                            choices = c("A", "B", "C", "D", "E", "F"),
                            status = "primary",
                            width = "300px", 
@@ -984,7 +984,7 @@ server <- function(input, output, session){
       sYear <- regmatches(input$p5_input_Syearsession, regexpr("\\d{4,4}",input$p5_input_Syearsession))
     }
     if(length(input$p5_input_Sqtype) == 0) sQ_type <- unique(questions$Q_type) else sQ_type <- input$p5_input_Sqtype
-    Scol_name <- c("届次", "年份", "题型", "竞赛题目")
+    Scol_name <- c("年份", "届次", "题型", "竞赛题目")
     p5_data <- questions[Year %in% sYear & Q_type %in% sQ_type, ] %>% set_colnames(Scol_name)
     DT::datatable(
       p5_data, 
@@ -999,7 +999,9 @@ server <- function(input, output, session){
           list(targets = 3, width = "30px"),
           list(targets = 4, width = "auto") 
         )
-      )
+      ), class = "display stripe hover order-column compact"
+
+      
     )
   })
   
